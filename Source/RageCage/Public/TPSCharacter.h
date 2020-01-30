@@ -27,9 +27,9 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	void MoveForward(float Value);
-
 	void MoveRight(float Value);
+
+	void MoveForward(float Value);
 
 	void BeginZoom();
 
@@ -47,9 +47,13 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Category = "Components")
 	USHealthComponent* HealthComp;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Variables")
+	UPROPERTY(ReplicatedUsing=OnRep_BeginZoom, EditAnywhere, BlueprintReadWrite, Category = "Variables")
 	bool bIsAiming;
 
+	UFUNCTION()
+	void OnRep_BeginZoom();
+
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Variables")
 	bool bWantsToZoom;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Player")

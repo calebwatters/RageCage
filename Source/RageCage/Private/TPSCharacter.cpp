@@ -56,14 +56,19 @@ void ATPSCharacter::BeginPlay()
 
 void ATPSCharacter::BeginZoom()
 {
-	bWantsToZoom = true;
-	bIsAiming = true;
+	OnRep_BeginZoom();
 }
 
 void ATPSCharacter::EndZoom()
 {
 	bWantsToZoom = false;
 	bIsAiming = false;
+}
+
+void ATPSCharacter::OnRep_BeginZoom()
+{
+	bWantsToZoom = true;
+	bIsAiming = true;
 }
 
 void ATPSCharacter::Grab()
@@ -137,9 +142,6 @@ void ATPSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
-	PlayerInputComponent->BindAxis("LookUp", this, &ATPSCharacter::AddControllerPitchInput);
-	PlayerInputComponent->BindAxis("Turn", this, &ATPSCharacter::AddControllerYawInput);
-
 	PlayerInputComponent->BindAction("Zoom", IE_Pressed, this, &ATPSCharacter::BeginZoom);
 	PlayerInputComponent->BindAction("Zoom", IE_Released, this, &ATPSCharacter::EndZoom);
 
@@ -166,4 +168,5 @@ void ATPSCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLif
 	DOREPLIFETIME(ATPSCharacter, CurrentWeapon);
 	DOREPLIFETIME(ATPSCharacter, bDied);
 	DOREPLIFETIME(ATPSCharacter, bMeleeing);
+	DOREPLIFETIME(ATPSCharacter, bWantsToZoom);
 }
