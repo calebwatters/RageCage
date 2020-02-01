@@ -11,6 +11,9 @@
 #include "RageCage.h"
 #include "TimerManager.h"
 #include "Net/UnrealNetwork.h"
+#include "Sound/SoundCue.h"
+#include "GameFramework/ForceFeedbackEffect.h"
+#include "GameFramework/PlayerController.h"
 
 static int32 DebugWeaponDrawing = 0;
  FAutoConsoleVariableRef CVARDebugWeaponDrawing(TEXT("COOP.DebugWeapons"), DebugWeaponDrawing, TEXT("Draw Debug Lines for Weapons"), ECVF_Cheat);
@@ -74,6 +77,21 @@ void APrimaryWeapon::Fire()
 		UE_LOG(LogTemp, Warning, TEXT("This is on the client"))
 		ServerFire();
 	}
+	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
+	PlayerController->ClientPlayForceFeedback(ControllerFeedback, false, false, NAME_None);
+	UGameplayStatics::SpawnSoundAttached(FireSound, RootComponent);
+
+	if (Role == ROLE_Authority) {
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+		WeaponShell = GetWorld()->SpawnActor<AActor>(SetWeaponShell, FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
+		if (WeaponShell)
+		{
+			WeaponShell->SetOwner(this);
+			WeaponShell->AttachToComponent(MeshComp, FAttachmentTransformRules::SnapToTargetNotIncludingScale, "BulletSocket");
+		}
+	}
+
 	AActor* MyOwner = GetOwner();
 	if (MyOwner)
 	{

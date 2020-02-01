@@ -27,9 +27,6 @@ ATPSCharacter::ATPSCharacter()
 
 	GrabberComp = CreateDefaultSubobject<UGrabber>(TEXT("GrabberComp"));
 
-	ZoomedFOV = 65.0f;
-	ZoomInterpSpeed = 20.0f;
-
 }
 
 // Called when the game starts or when spawned
@@ -52,25 +49,6 @@ void ATPSCharacter::BeginPlay()
 	}
 }
 
-
-
-void ATPSCharacter::BeginZoom()
-{
-	OnRep_BeginZoom();
-}
-
-void ATPSCharacter::EndZoom()
-{
-	bWantsToZoom = false;
-	bIsAiming = false;
-}
-
-void ATPSCharacter::OnRep_BeginZoom()
-{
-	bWantsToZoom = true;
-	bIsAiming = true;
-}
-
 void ATPSCharacter::Grab()
 {
 	GrabberComp->Grab();
@@ -83,7 +61,7 @@ void ATPSCharacter::Release()
 
 void ATPSCharacter::StartFire()
 {
-	if (CurrentWeapon) {
+	if (CurrentWeapon && !bIsUsingTelekinesis && !bMeleeing) {
 		CurrentWeapon->StartFire();
 	}
 }
@@ -102,6 +80,29 @@ void ATPSCharacter::OnHealthChanged(USHealthComponent* HealthComponent, float He
 		bDied = true;
 
 	}
+
+	//if (MatInst == nullptr)
+	//{
+	//	MatInst = GetMesh()->CreateAndSetMaterialInstanceDynamicFromMaterial(1, GetMesh()->GetMaterial(1));
+	//}
+	//if (MatInst)
+	//{
+	//	MatInst->SetScalarParameterValue("HealthPickupAlpha", 0.1f);
+	//}
+}
+
+void ATPSCharacter::Melee()
+{
+	if (Role < ROLE_Authority)
+	{
+		ServerMelee();
+	}
+	if (CurrentWeapon)
+	{
+		CurrentWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, "Grip_PointL");
+	}
+	bMeleeing = true;
+	OnRep_Meleed();
 }
 
 void ATPSCharacter::OnRep_Meleed()
@@ -111,39 +112,44 @@ void ATPSCharacter::OnRep_Meleed()
 	{
 		AnimInstance->Montage_Play(MeleeMontage, 1.35f);
 	}
+	GetWorld()->GetTimerManager().SetTimer(_loopTimerHandle, this, &ATPSCharacter::MeleeWeaponReattach, 0.5f, false);
 }
 
-void ATPSCharacter::Melee()
+
+void ATPSCharacter::ServerMelee_Implementation()
 {
-	bMeleeing = true;
-	OnRep_Meleed();
+	Melee();
 }
+
+bool ATPSCharacter::ServerMelee_Validate()
+{
+	return true;
+}
+
 
 void ATPSCharacter::StopMelee()
 {
 	bMeleeing = false;
 }
 
+void ATPSCharacter::MeleeWeaponReattach()
+{
+	if (CurrentWeapon)
+	{
+	CurrentWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, "Grip_Point"); 
+	}
+}
 
 // Called every frame
 void ATPSCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-	float TargetFOV = bWantsToZoom ? ZoomedFOV : DefaultFOV;
-
-	float NewFOV = FMath::FInterpConstantTo(CameraComp->FieldOfView, TargetFOV, DeltaTime, ZoomInterpSpeed);
-
-	CameraComp->SetFieldOfView(NewFOV);
 }
 
 // Called to bind functionality to input
 void ATPSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
-	PlayerInputComponent->BindAction("Zoom", IE_Pressed, this, &ATPSCharacter::BeginZoom);
-	PlayerInputComponent->BindAction("Zoom", IE_Released, this, &ATPSCharacter::EndZoom);
 
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &ATPSCharacter::StartFire);
 	PlayerInputComponent->BindAction("Fire", IE_Released, this, &ATPSCharacter::StopFire);
@@ -168,5 +174,4 @@ void ATPSCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLif
 	DOREPLIFETIME(ATPSCharacter, CurrentWeapon);
 	DOREPLIFETIME(ATPSCharacter, bDied);
 	DOREPLIFETIME(ATPSCharacter, bMeleeing);
-	DOREPLIFETIME(ATPSCharacter, bWantsToZoom);
 }

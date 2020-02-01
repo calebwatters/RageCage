@@ -1,7 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 #include "Grabber.h"
 #include "DrawDebugHelpers.h"
-
+#include "../Public/Grabber.h"
+#include "Net/UnrealNetwork.h"
 #define OUT
 // Sets default values for this component's properties
 UGrabber::UGrabber()
@@ -34,6 +35,10 @@ void UGrabber::FindPhysicsHandleComponent() {
 
 
 void UGrabber::Grab() {
+	if (GetOwnerRole() < ROLE_Authority) {
+		ServerGrab();
+	}
+	bIsGrabbing = true;
 	//Try and reach any actors with physics body collision channel set
 	auto HitResult = GetFirstPhysicsBodyInReach();
 	auto ComponentToGrab = HitResult.GetComponent();
@@ -49,14 +54,33 @@ void UGrabber::Grab() {
 			ComponentToGrab->GetOwner()->GetActorLocation()
 		);
 	}
+}
 
+void UGrabber::ServerGrab_Implementation()
+{
+	Grab();
+}
 
+bool UGrabber::ServerGrab_Validate()
+{
+	return true;
 }
 
 void UGrabber::Release()
 {
+	bIsGrabbing = false;
 	if (!PhysicsHandle) { return; }
 	PhysicsHandle->ReleaseComponent();
+}
+
+void UGrabber::ServerRelease_Implementation()
+{
+	Release();
+}
+
+bool UGrabber::ServerRelease_Validate()
+{
+	return true;
 }
 
 const FHitResult UGrabber::GetFirstPhysicsBodyInReach() {
@@ -111,4 +135,11 @@ FVector UGrabber::GetReachLineStart() {
 		OUT PlayerViewPointRotation
 	);
 	return PlayerViewPointLocation;
+}
+
+void UGrabber::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(UGrabber, bIsGrabbing);
 }

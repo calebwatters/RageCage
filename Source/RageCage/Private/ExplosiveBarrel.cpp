@@ -6,6 +6,7 @@
 #include "PhysicsEngine/RadialForceComponent.h"
 #include "../Public/ExplosiveBarrel.h"
 #include "Net/UnrealNetwork.h"
+#include "Sound/SoundCue.h"
 // Sets default values
 AExplosiveBarrel::AExplosiveBarrel()
 {
@@ -46,6 +47,9 @@ void AExplosiveBarrel::OnHealthChanged(USHealthComponent * OwningHealthComp, flo
 	if (Health <= 0.0f)
 	{
 		bExploded = true;
+
+		UGameplayStatics::PlaySoundAtLocation(this, ExplodeSound, GetActorLocation());
+
 		OnRep_Exploded();
 
 
@@ -60,7 +64,7 @@ void AExplosiveBarrel::OnRep_Exploded()
 {
 	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ExplosionEffect, GetActorLocation());
 
-	MeshComp->SetMaterial(0, ExplodedMaterial);
+	MeshComp->SetMaterial(1, ExplodedMaterial);
 }
 
 void AExplosiveBarrel::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

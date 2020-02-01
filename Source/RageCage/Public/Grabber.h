@@ -27,6 +27,10 @@ protected:
 	FVector GetReachLineEnd();
 
 	FVector GetReachLineStart();
+
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Variables")
+	bool bIsGrabbing;
+
 public:	
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
@@ -41,5 +45,11 @@ public:
 
 	UFUNCTION()
 	void Release();
+
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerGrab();
+
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerRelease();
 
 };

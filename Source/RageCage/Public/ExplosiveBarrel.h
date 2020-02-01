@@ -10,6 +10,8 @@ class USHealthComponent;
 class UStaticMeshComponent;
 class URadialForceComponent;
 class UParticleSystem;
+class USoundCue;
+
 UCLASS()
 class RAGECAGE_API AExplosiveBarrel : public AActor
 {
@@ -48,6 +50,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "FX")
 	UMaterialInterface* ExplodedMaterial;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Trackerbot")
+	USoundCue* ExplodeSound;
 
 public:	
 	

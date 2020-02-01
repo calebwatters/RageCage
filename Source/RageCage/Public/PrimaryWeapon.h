@@ -9,6 +9,8 @@
 class USkeletalMeshComponent;
 class UDamageType;
 class UParticleSystem;
+class USoundCue;
+class UForceFeedbackEffect;
 
 USTRUCT()
 struct FHitScanTrace
@@ -87,6 +89,20 @@ protected:
 
 	UFUNCTION()
 	void OnRep_HitScanTrace();
+
+	UPROPERTY(EditDefaultsOnly, Category = "FX")
+	USoundCue* FireSound;
+
+
+	UPROPERTY(EditDefaultsOnly, Category = "FX")
+	UForceFeedbackEffect* ControllerFeedback;
+
+	UPROPERTY(Replicated, BlueprintReadWrite)
+	AActor* WeaponShell;
+
+	UPROPERTY(EditDefaultsOnly, Category = "FX")
+	TSubclassOf<AActor> SetWeaponShell;
+
 public:	
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	void StartFire();

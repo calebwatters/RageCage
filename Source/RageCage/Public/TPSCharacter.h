@@ -27,14 +27,6 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	void MoveRight(float Value);
-
-	void MoveForward(float Value);
-
-	void BeginZoom();
-
-	void EndZoom();
-
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Components")
 	UGrabber* GrabberComp;
 
@@ -46,21 +38,6 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly, Category = "Components")
 	USHealthComponent* HealthComp;
-
-	UPROPERTY(ReplicatedUsing=OnRep_BeginZoom, EditAnywhere, BlueprintReadWrite, Category = "Variables")
-	bool bIsAiming;
-
-	UFUNCTION()
-	void OnRep_BeginZoom();
-
-	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Variables")
-	bool bWantsToZoom;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Player")
-	float ZoomedFOV;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Player", meta = (ClampMin = 0.1, ClampMax = 100))
-	float ZoomInterpSpeed;
 
 	float DefaultFOV;
 
@@ -86,7 +63,7 @@ protected:
 	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Player")
 	bool bDied;
 
-	UPROPERTY(ReplicatedUsing=OnRep_Meleed, VisibleAnywhere, BlueprintReadOnly, Category = "Anims")
+	UPROPERTY(ReplicatedUsing = OnRep_Meleed, VisibleAnywhere, BlueprintReadOnly, Category = "Anims")
 	bool bMeleeing;
 
 	UFUNCTION()
@@ -96,8 +73,21 @@ protected:
 
 	void StopMelee();
 
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerMelee();
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Anims")
-		UAnimMontage* MeleeMontage;
+	UAnimMontage* MeleeMontage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player")
+	bool bIsUsingTelekinesis;
+
+	UMaterialInstanceDynamic* MatInst;
+
+	UFUNCTION()
+	void MeleeWeaponReattach();
+
+	FTimerHandle _loopTimerHandle;
 
 public:	
 	// Called every frame
