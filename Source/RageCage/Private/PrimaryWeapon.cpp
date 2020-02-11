@@ -31,6 +31,7 @@ APrimaryWeapon::APrimaryWeapon()
 	MuzzleSocketName = "MuzzleSocket";
 	TracerTargetName = "Target";
 	BaseDamage = 20.0f;
+	BulletSpread = 2.0f;
 	RateOfFire = 0.5f;
 
 	SetReplicates(true);
@@ -74,23 +75,23 @@ void APrimaryWeapon::Fire()
 	// Trace the world, from pawn eyes to crossshair location
 	if (Role < ROLE_Authority)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("This is on the client"))
 		ServerFire();
 	}
+
 	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
 	PlayerController->ClientPlayForceFeedback(ControllerFeedback, false, false, NAME_None);
 	UGameplayStatics::SpawnSoundAttached(FireSound, RootComponent);
 
-	if (Role == ROLE_Authority) {
-		FActorSpawnParameters SpawnParams;
-		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-		WeaponShell = GetWorld()->SpawnActor<AActor>(SetWeaponShell, FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
-		if (WeaponShell)
-		{
-			WeaponShell->SetOwner(this);
-			WeaponShell->AttachToComponent(MeshComp, FAttachmentTransformRules::SnapToTargetNotIncludingScale, "BulletSocket");
-		}
-	}
+	//if (Role == ROLE_Authority) {
+	//	FActorSpawnParameters SpawnParams;
+	//	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	//	WeaponShell = GetWorld()->SpawnActor<AActor>(SetWeaponShell, FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
+	//	if (WeaponShell)
+	//	{
+	//		WeaponShell->SetOwner(this);
+	//		WeaponShell->AttachToComponent(MeshComp, FAttachmentTransformRules::SnapToTargetNotIncludingScale, "BulletSocket");
+	//	}
+	//}
 
 	AActor* MyOwner = GetOwner();
 	if (MyOwner)
@@ -100,6 +101,10 @@ void APrimaryWeapon::Fire()
 		MyOwner->GetActorEyesViewPoint(EyeLocation, EyeRotation);
 
 		FVector ShotDirection = EyeRotation.Vector();
+
+		//Bullet Spread
+		float HalfRad = FMath::DegreesToRadians(BulletSpread);
+		ShotDirection = FMath::VRandCone(ShotDirection, HalfRad, HalfRad);
 
 		FVector TraceEnd = EyeLocation + (ShotDirection * 10000);
 
@@ -128,7 +133,7 @@ void APrimaryWeapon::Fire()
 				ActualDamage *= 4.0f;
 			}
 
-			UGameplayStatics::ApplyPointDamage(HitActor, ActualDamage, ShotDirection, Hit, MyOwner->GetInstigatorController(), this, DamageType);
+			UGameplayStatics::ApplyPointDamage(HitActor, ActualDamage, ShotDirection, Hit, MyOwner->GetInstigatorController(), MyOwner, DamageType);
 
 			PlayImpactEffects(SurfaceType, Hit.ImpactPoint);
 

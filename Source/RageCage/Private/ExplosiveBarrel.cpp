@@ -64,6 +64,10 @@ void AExplosiveBarrel::OnRep_Exploded()
 {
 	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ExplosionEffect, GetActorLocation());
 
+	TArray<AActor*> IgnoredActors;
+	IgnoredActors.Add(this);
+
+	UGameplayStatics::ApplyRadialDamage(this, 60, GetActorLocation(), ExplosionImpulse, nullptr, IgnoredActors, this, GetInstigatorController(), true);
 	MeshComp->SetMaterial(1, ExplodedMaterial);
 }
 

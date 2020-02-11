@@ -87,4 +87,8 @@ protected:
 	void OnCheckNearbyBots();
 
 	int32 PowerLevel;
+
+	FTimerHandle TimerHandle_RefreshPath;
+
+	void RefreshPath();
 };
