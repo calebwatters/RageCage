@@ -73,7 +73,7 @@ void APrimaryWeapon::PlayImpactEffects(EPhysicalSurface SurfaceType, FVector Imp
 void APrimaryWeapon::Fire()
 {
 	// Trace the world, from pawn eyes to crossshair location
-	if (Role < ROLE_Authority)
+	if (GetLocalRole() < ROLE_Authority)
 	{
 		ServerFire();
 	}
@@ -171,7 +171,7 @@ void APrimaryWeapon::Fire()
 				PC->ClientPlayCameraShake(FireCamShake);
 			}
 		}
-		if (Role == ROLE_Authority)
+		if (GetLocalRole() == ROLE_Authority)
 		{
 			HitScanTrace.TraceTo = TracerEndPoint;
 			HitScanTrace.SurfaceType = SurfaceType;

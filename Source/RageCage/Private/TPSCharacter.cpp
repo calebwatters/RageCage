@@ -37,7 +37,7 @@ void ATPSCharacter::BeginPlay()
 	HealthComp->OnHealthChanged.AddDynamic(this, &ATPSCharacter::OnHealthChanged);
 
 	DefaultFOV = CameraComp->FieldOfView;
-	if (Role == ROLE_Authority) {
+	if (GetLocalRole() == ROLE_Authority) {
 		FActorSpawnParameters SpawnParams;
 		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 		CurrentWeapon = GetWorld()->SpawnActor<APrimaryWeapon>(StarterWeaponClass, FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
@@ -93,7 +93,7 @@ void ATPSCharacter::OnHealthChanged(USHealthComponent* HealthComponent, float He
 
 void ATPSCharacter::Melee()
 {
-	if (Role < ROLE_Authority)
+	if (GetLocalRole() < ROLE_Authority)
 	{
 		ServerMelee();
 	}
